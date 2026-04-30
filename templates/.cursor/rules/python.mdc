@@ -1,0 +1,26 @@
+---
+description: Python 编码规范
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Python 规范
+
+## 类型
+- 类型注解全覆盖（函数参数和返回值必须有）
+- 用 `dataclass` 或 `Pydantic BaseModel` 替代裸 dict 传参
+- `Optional[X]` 写成 `X | None`（Python 3.10+）
+
+## 异步
+- IO 密集型操作用 async/await + asyncio，不用 threading
+- 不在 async 函数里调用同步阻塞 IO
+
+## 错误处理
+- 异常要具体（`ValueError`, `FileNotFoundError`），不用裸 `Exception`
+- 不用裸 `except:` 或 `except Exception: pass`
+- 对外接口失败时返回 None / 默认值，而不是直接抛出
+
+## 代码风格
+- 遵循 PEP 8
+- 函数参数超过 4 个考虑用 dataclass 封装
+- 避免可变默认参数（`def f(x=[])` 是 bug）

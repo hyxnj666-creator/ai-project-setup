@@ -1,0 +1,26 @@
+---
+description: 通用开发规范，适用所有文件和对话
+alwaysApply: true
+---
+
+# 通用开发规范
+
+## 命名
+- 变量和函数用自描述词，避免 tmp/data/obj/info/res 等无意义缩写
+- 布尔值用 is/has/should 前缀（isLoading、hasError、shouldRetry）
+- 常量全大写下划线（MAX_RETRY_COUNT）
+
+## 代码质量
+- 不留死代码（注释掉的旧代码直接删）
+- 不留调试用的 console.log
+- 错误处理不能是空 catch
+- 每个函数做一件事，超过 50 行考虑拆分
+
+## 测试
+- 新功能必须有对应测试，不写测试的代码不算完成
+- 修复 bug 时必须加回归测试
+
+## 文档同步
+- 代码改了，MEMORY.md 必须同步更新
+- 关键决策写到 docs/decisions/
+- 踩到坑写到 docs/anti-patterns.md

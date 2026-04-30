@@ -1,0 +1,27 @@
+---
+description: TypeScript 编码规范
+globs: "**/*.ts,**/*.tsx"
+alwaysApply: false
+---
+
+# TypeScript 规范
+
+## 类型
+- 禁止 `any`，用 `unknown` + 类型守卫
+- `interface` 优于 `type`（除 union / intersection 类型）
+- 导出的函数和类必须有完整的类型签名
+- 枚举用 `const enum` 或 `as const` 对象
+
+## 异步
+- async 函数必须有 try/catch
+- Promise 链不用 `.then()/.catch()`，统一 async/await
+- 不用裸 `Promise.all`，用 `Promise.allSettled` 处理部分失败
+
+## 模块
+- 导入路径用 `.js` 扩展名（ESM 项目）
+- 相对路径不超过 3 层，否则用路径别名
+- 避免循环导入
+
+## 文档
+- 导出的函数必须有 JSDoc（至少一行描述）
+- 复杂的类型或逻辑加行内注释解释 why，不解释 what

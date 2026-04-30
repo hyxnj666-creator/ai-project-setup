@@ -1,0 +1,33 @@
+---
+description: Git commit message 规范
+alwaysApply: true
+---
+
+# Git Commit 规范
+
+使用 Conventional Commits 格式：
+
+```
+type(scope): description
+
+body（可选，解释 why）
+```
+
+## type 可选值
+
+| type | 含义 |
+|------|------|
+| feat | 新功能 |
+| fix | 修复 bug |
+| refactor | 重构（不改行为） |
+| test | 测试相关 |
+| docs | 文档 |
+| chore | 工具、依赖、配置 |
+| perf | 性能优化 |
+
+## 规则
+
+- description 不超过 72 字符，用现在时态（add, fix, update，不用 added/fixed）
+- body 解释 why，不只是 what
+- 不用"Update code"、"Fix bug"等无意义描述
+- 一个 commit 做一件事
