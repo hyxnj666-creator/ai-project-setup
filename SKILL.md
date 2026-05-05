@@ -9,716 +9,741 @@ description: >-
 
 # AI Project Setup
 
-把任意项目初始化为"AI 可以稳定协作"的状态——生成 AGENTS.md、MEMORY.md、ROADMAP.md、ADR 目录、Cursor Rules、ARCHITECTURE 骨架等完整文档基建。
+Initialize any project into a state where AI can collaborate reliably — generating AGENTS.md, MEMORY.md, ROADMAP.md, ADR directory, Cursor Rules, ARCHITECTURE skeleton, and more.
 
 ---
 
-## Step 0：开工前收集信息
+## Step 0: Gather Information Before Starting
 
-**不要直接开始生成文件。先向用户提问，收集以下信息：**
+**Do not start generating files immediately. Ask the user these questions first:**
 
-### 必问（6 个问题，一次性列出，等用户回答）
+### Required (6 questions — list all at once, wait for answers)
 
 ```
-在开始生成之前，我需要了解你的项目：
+Before I start, I need to understand your project:
 
-1. **项目类型**（选一个最接近的）
-   - 前端应用（Next.js / Vue / React）
-   - 后端服务（Node.js / Python / Go）
-   - CLI 工具 / 开源库
-   - 全栈一体（Monorepo）
-   - 其他：___
+1. **Project type** (pick the closest one)
+   - Frontend app (Next.js / Vue / React)
+   - Backend service (Node.js / Python / Go)
+   - CLI tool / open-source library
+   - Full-stack monorepo
+   - Other: ___
 
-2. **主要技术栈**
-   例如：TypeScript + Next.js 14 + Prisma + PostgreSQL
+2. **Main tech stack**
+   e.g. TypeScript + Next.js 14 + Prisma + PostgreSQL
 
-3. **有没有需要保护的稳定代码？**
-   例如：v1 已上线不能动、某个核心模块不让 AI 改、生产数据库不直接操作
-   没有的话直接说"没有"
+3. **Any code that must be protected from AI changes?**
+   e.g. v1 is live and stable, a core module that shouldn't be touched, production DB off-limits
+   Say "none" if not applicable.
 
-4. **项目里有没有 AI 驱动的核心功能？**
-   例如：调用 LLM API、RAG 检索、AI 生成内容
-   （有的话会额外生成 Prompt eval 模板）
+4. **Any AI-driven core features?**
+   e.g. LLM API calls, RAG retrieval, AI-generated content
+   (If yes, an optional Prompt eval scaffold will be generated)
 
-5. **使用哪些 AI 编辑器 / Agent？**（可多选）
+5. **Which AI editors / agents do you use?** (multi-select)
    - Cursor
    - Claude Code
    - GitHub Copilot
    - Codex CLI
-   - 其他：___
-   （影响是否生成对应配置文件）
+   - Other: ___
+   (Determines which config files to generate)
 
-6. **项目里会用到 MCP（Model Context Protocol）工具吗？**
-   例如：文件系统 MCP、数据库 MCP、ai-memory MCP
-   没有的话直接说"没有"
+6. **Will the project use MCP (Model Context Protocol) tools?**
+   e.g. filesystem MCP, database MCP, ai-memory MCP
+   Say "none" if not applicable.
 ```
 
-收到回答后，进入 Step 1。
+After receiving answers, proceed to Step 1.
 
 ---
 
-## Step 1：生成 AGENTS.md
+## Step 1: Generate AGENTS.md
 
-在项目根目录生成 `AGENTS.md`，使用以下模板，将用户提供的信息填入 `[占位符]` 部分：
+Generate `AGENTS.md` in the project root using the template below. Fill in all `[placeholders]` with the user's answers:
 
 ```markdown
-# [项目名] — AI 开发规则
+# [Project Name] — AI Development Rules
 
-> 本文件适用于所有 AI 编码助手（Cursor、Claude Code、GitHub Copilot、Codex CLI、其他 Agent）。
-> 开始任何开发工作前，请按顺序阅读本文件。
+> This file applies to all AI coding assistants (Cursor, Claude Code, GitHub Copilot, Codex CLI, and any other agents).
+> Read this file in order before starting any development work.
 
 ---
 
-## 1. 强制阅读顺序
+## 1. Mandatory Reading Order
 
-开始写代码前，按顺序读完以下文件：
+Before writing any code, read these files in order:
 
 ```
-1. ROADMAP.md        ← 当前在哪个阶段，Phase 目标（WHAT）
-2. MEMORY.md         ← 上次做到哪，已知地雷（WHERE WE LEFT OFF）
-3. docs/decisions/   ← 关键决策记录，newest-first（WHY）
+1. ROADMAP.md       ← Current phase and goals (WHAT)
+2. MEMORY.md        ← Where we left off, known landmines (WHERE WE LEFT OFF)
+3. docs/decisions/  ← Key decision records, newest-first (WHY)
 ```
 
-**读不懂就停下来问，不要边读边改代码。**
+**If anything is unclear, stop and ask. Do not read and modify code at the same time.**
 
 ---
 
-## 2. 项目概述
+## 2. Project Overview
 
-[一句话描述项目做什么]
+[One sentence describing what this project does]
 
-**技术栈**：[用户填入的技术栈]
+**Tech stack**: [user's tech stack]
 
-**目标用户**：[项目面向谁]
-
----
-
-## 3. 🔒 隔离区（不可触碰）
-
-[如果用户有保护区域，填入；否则删除此节或写"暂无特殊限制"]
-
-以下代码 / 路径 / 资源，**未经明确授权不得修改**：
-
-- `[受保护的路径或模块]`：[原因，例如 v1 已上线，改动影响生产]
-
-如需修改以上内容，必须先得到明确确认再动手。
+**Target users**: [who this is for]
 
 ---
 
-## 4. Critical Rules（不可违反）
+## 3. 🔒 Protected Zones (Do Not Touch)
 
-1. **所有新功能必须有对应测试**——不写测试的代码不算完成
-2. **破坏性变更需要明确授权**——不要"顺便"重构稳定模块
-3. **依赖要最小化**——新增依赖前确认是否有内置替代方案
-4. **文档要同步**——代码改了，MEMORY.md 必须在同一轮里更新
-5. **禁止在生产路径执行写操作**——未经确认不得修改生产数据库 / 生产 API
+[If the user has protected areas, fill in here; otherwise delete this section or write "No special restrictions"]
 
----
+The following code / paths / resources **must NOT be modified without explicit confirmation**:
 
-## 5. Agentic 执行护栏
+- `[protected path or module]`: [reason, e.g. v1 is live, changes affect production]
 
-> 本节针对自主 agentic 任务（AI 独立读写文件、执行命令、调用 API）的额外约束。
-
-**Shell 命令**：
-- ✅ 可自主执行：`git status / diff / log`、`npm run test / build / lint`、只读查询
-- ⚠️ 执行前须告知：`git commit / push`、`npm publish`、`docker`
-- 🚫 绝对禁止：`rm -rf`、`DROP TABLE`、向生产 API 发写操作、修改 `.env` / 密钥文件
-
-**文件系统**：
-- 不得读写 `.env`、`*.secret`、`*.key`、`credentials.*`
-- 不得修改隔离区（见第 3 节）内的任何文件
-- 生成新文件时，已存在的文件覆盖前必须先确认
+Any modification to the above requires explicit confirmation first.
 
 ---
 
-## 6. 完工的 Definition of Done（文档同步纪律）
+## 4. Critical Rules (Non-Negotiable)
 
-**每完成一项工作，同一轮里必须对照以下清单：**
-
-| # | 文档 | 何时必更 |
-|---|------|---------|
-| 1 | `MEMORY.md` | **永远**——更新当前状态 + 下一步 + 已完成 |
-| 2 | `ROADMAP.md` | 涉及 Phase 进度时——打勾对应子项 |
-| 3 | 相关 ADR | 决策有调整时——追加修订历史（不改原文） |
-| 4 | `docs/anti-patterns.md` | 踩到坑时——记录反模式 + 正确做法 |
-
-**未跑清单 = 本次工作未关门。不允许进入下一项 / commit / 告诉用户"做完了"。**
+1. **All new features must have tests** — code without tests is not done
+2. **Breaking changes require explicit authorization** — don't "casually refactor" stable modules
+3. **Minimize dependencies** — confirm there's no built-in alternative before adding a new package
+4. **Keep docs in sync** — if code changes, MEMORY.md must be updated in the same session
+5. **No write operations on production paths** — don't modify production DB / production API without confirmation
 
 ---
 
-## 7. 代码规范
+## 5. Agentic Execution Guardrails
 
-### 通用
-- 变量和函数用自描述命名，不用 tmp/data/obj 等无意义词
-- 每个函数做一件事，超过 50 行考虑拆分
-- 错误必须处理，不允许空 catch
-- 不留死代码（注释掉的旧代码直接删）
+> Extra constraints for autonomous agentic tasks (AI independently reading/writing files, running commands, calling APIs).
 
-### [技术栈专项规范]
+**Shell commands**:
+- ✅ Safe to run autonomously: `git status / diff / log`, `npm run test / build / lint`, read-only queries
+- ⚠️ Must notify before running: `git commit / push`, `npm publish`, `docker`
+- 🚫 Strictly forbidden: `rm -rf`, `DROP TABLE`, write operations to production APIs, modifying `.env` / secrets
 
-[根据技术栈填入，例如：]
-
-**TypeScript**：
-- 禁止 `any`，用 `unknown` + 类型守卫
-- async 函数必须有 try/catch
-- 导出的函数必须有 JSDoc
-
-**Python**：
-- 类型注解全覆盖（函数参数和返回值）
-- 用 dataclass / Pydantic 替代裸 dict
-- 异常要具体，不用裸 Exception
+**File system**:
+- Must not read or write `.env`, `*.secret`, `*.key`, `credentials.*`
+- Must not modify any files inside protected zones (see Section 3)
+- Before overwriting an existing file, confirm with the user first
 
 ---
 
-## 8. 架构模式
+## 6. Definition of Done (Doc Sync Discipline)
 
-**业务逻辑 / IO 分离**：
-- 业务逻辑写成纯函数（无副作用，易测试）
-- 文件读写、网络请求、数据库操作放在外层薄包装
+**After completing any piece of work, check off the following in the same session:**
 
-**错误处理原则**：
-- 对外 API 失败时返回空值 / 默认值，而不是直接抛出
-- 调用方决定是否把"失败"当作错误
+| # | Document | When Required |
+|---|----------|---------------|
+| 1 | `MEMORY.md` | **Always** — update current status + next steps + completed items |
+| 2 | `ROADMAP.md` | When Phase progress changes — check off the relevant sub-item |
+| 3 | Relevant ADR | When a decision is revised — append revision history (don't edit original) |
+| 4 | `docs/anti-patterns.md` | When a mistake is made — record the anti-pattern + correct approach |
 
----
-
-## 9. MCP 配置
-
-[仅在用户回答使用 MCP 时填入；否则删除此节]
-
-**允许使用的 MCP**：
-- `[mcp-name]`：[用途，例如 filesystem - 读写本地文件]
-
-**禁止在生产环境使用的 MCP**：
-- `[mcp-name]`：[原因]
+**Incomplete checklist = work is not done. Do not move to the next task / commit / tell the user "it's done".**
 
 ---
 
-## 10. 常见任务清单
+## 7. Code Standards
 
-### 添加新功能
-1. 确认需求，在 MEMORY.md 里记录计划
-2. （复杂功能）先写 spike doc 再写代码
-3. 实现功能，遵守 Critical Rules 和 Agentic 护栏
-4. 写测试
-5. 跑 DoD 清单（§6）
+### General
+- Use descriptive names — avoid tmp/data/obj/info and other meaningless words
+- Each function does one thing — consider splitting if over 50 lines
+- Errors must be handled — no empty catch blocks
+- No dead code — delete commented-out old code, don't leave it
 
-### 修复 Bug
-1. 复现问题，确认根因
-2. 修复 + 加回归测试
-3. 跑 DoD 清单（§6）
+### [Tech Stack Specifics]
 
-### 关键决策
-1. 写 ADR 到 `docs/decisions/YYYY-MM-DD-主题.md`
-2. 在 `docs/decisions/README.md` 的索引表里登记
+[Fill in based on tech stack, e.g.:]
+
+**TypeScript**:
+- No `any` — use `unknown` + type guards
+- async functions must have try/catch
+- Exported functions must have JSDoc
+
+**Python**:
+- Full type annotations (function parameters and return values)
+- Use dataclass / Pydantic instead of bare dicts
+- Be specific with exceptions — no bare `Exception`
 
 ---
 
-## 11. Where to Look（按问题找文档）
+## 8. Architecture Patterns
 
-| 问题 | 去哪里看 |
-|------|---------|
-| 现在在做什么 / 进度 | `MEMORY.md` |
-| 这个 Phase 的目标 / DoD | `ROADMAP.md` |
-| 为什么做这个决策 | `docs/decisions/` newest-first |
-| 踩过什么坑 | `docs/anti-patterns.md` |
-| 系统架构是什么 | `docs/ARCHITECTURE.md` |
-| 怎么发版 / 部署 | `docs/DEPLOY.md`（如有） |
+**Separate business logic from I/O**:
+- Business logic as pure functions (no side effects, easy to test)
+- File I/O, network requests, and DB operations in thin outer wrappers
+
+**Error handling**:
+- External API failures return empty values / defaults rather than throwing
+- The caller decides whether a "failure" is an error
+
+---
+
+## 9. MCP Configuration
+
+[Only fill in if the project uses MCP; otherwise delete this section]
+
+**Allowed MCP tools**:
+- `[mcp-name]`: [purpose, e.g. filesystem — read/write local files]
+
+**MCP tools forbidden in production**:
+- `[mcp-name]`: [reason]
+
+---
+
+## 10. Common Task Checklists
+
+### Adding a New Feature
+1. Clarify requirements, record plan in MEMORY.md
+2. (For complex features) Write a spike doc before writing code
+3. Implement, following Critical Rules and Agentic Guardrails
+4. Write tests
+5. Run DoD checklist (Section 6)
+
+### Fixing a Bug
+1. Reproduce the issue, confirm root cause
+2. Fix + add regression test
+3. Run DoD checklist (Section 6)
+
+### Recording a Key Decision
+1. Write ADR to `docs/decisions/YYYY-MM-DD-topic.md`
+2. Add entry to the index in `docs/decisions/README.md`
+
+---
+
+## 11. Where to Look
+
+| Question | Where to go |
+|----------|------------|
+| What are we working on / progress | `MEMORY.md` |
+| This Phase's goals / DoD | `ROADMAP.md` |
+| Why was this decision made | `docs/decisions/` newest-first |
+| What mistakes have been made | `docs/anti-patterns.md` |
+| What is the system architecture | `docs/ARCHITECTURE.md` |
+| How to release / deploy | `docs/DEPLOY.md` (if exists) |
 ```
 
 ---
 
-## Step 1.5：生成 ROADMAP.md
+## Step 1.5: Generate ROADMAP.md
 
-在项目根目录生成 `ROADMAP.md`：
+Generate `ROADMAP.md` in the project root:
 
 ```markdown
-# [项目名] Roadmap
+# [Project Name] Roadmap
 
-> **WHAT 层**：每个 Phase 的目标、交付物、Definition of Done。
-> WHY 看 `docs/decisions/`。
-> 进度看 `MEMORY.md`。
+> **WHAT layer**: Goals, deliverables, and Definition of Done for each Phase.
+> For WHY, see `docs/decisions/`.
+> For progress, see `MEMORY.md`.
 >
-> **原则：每个 Phase 有硬性 DoD，不满足不得进下一 Phase。**
+> **Rule: Each Phase has a hard DoD. You may not advance to the next Phase until it is met.**
 
 ---
 
-## 🔴 开发节奏纪律（每次完工必跑）
+## 🔴 Development Discipline (Run After Every Task)
 
-每完成一项工作，同一轮里必须完成以下相关项：
+After completing any piece of work, complete the relevant items below in the same session:
 
-| # | 文档 | 何时必更 | 更新内容 |
-|---|------|---------|---------|
-| 1 | `MEMORY.md` | **永远** | 当前状态 + 下一步勾选 + 已完成纪要 |
-| 2 | `ROADMAP.md` | 涉及 Phase 进度时 | 当前状态表 + 对应 Phase 子项打勾 |
-| 3 | 相关 ADR | 决策有调整时 | 追加修订历史（不改原文） |
-| 4 | `docs/anti-patterns.md` | 踩到坑时 | 反模式 + 正确做法 |
+| # | Document | When Required | Update |
+|---|----------|---------------|--------|
+| 1 | `MEMORY.md` | **Always** | Current status + next steps + completed items |
+| 2 | `ROADMAP.md` | When Phase progress changes | Check off sub-items in the current Phase |
+| 3 | Relevant ADR | When a decision is revised | Append revision history (don't edit original) |
+| 4 | `docs/anti-patterns.md` | When a mistake is made | Anti-pattern + correct approach |
 
-**未跑清单 = 本次工作未关门。**
-
----
-
-## 当前状态
-
-| 项 | 值 |
-|---|---|
-| 当前 Phase | **Phase 0 · 文档基建** |
-| 下一 Phase | Phase 1 · [填入下一阶段名称] |
-| 上线版本 | 未上线 |
-| 最后更新 | [今天日期] |
+**Incomplete checklist = work is not done. Do not move on / commit / say "it's done".**
 
 ---
 
-## Phase 总览
+## Current Status
 
-| Phase | 名称 | 状态 | 时长（预估） | 前置 |
-|-------|------|------|-----------|------|
-| **0** | 文档基建 | ✅ 完成 | 0.5 天 | — |
-| **1** | [第一个阶段名称] | ⏸ 待启动 | [预估] | Phase 0 关门 |
-| **2** | [第二个阶段名称] | ⏸ 待启动 | [预估] | Phase 1 关门 |
+| Item | Value |
+|------|-------|
+| Current Phase | **Phase 0 · Documentation Foundation** |
+| Next Phase | Phase 1 · [fill in next phase name] |
+| Live Version | Not yet released |
+| Last Updated | [today's date] |
 
 ---
 
-## Phase 0 · 文档基建
+## Phase Overview
 
-**目标**：建立 AI 协作文档骨架，让任何 AI 助手进入项目都能快速对齐。
+| Phase | Name | Status | Est. Duration | Prerequisites |
+|-------|------|--------|---------------|---------------|
+| **0** | Documentation Foundation | ✅ Done | 0.5 days | — |
+| **1** | [First Phase Name] | ⏸ Not started | [estimate] | Phase 0 closed |
+| **2** | [Second Phase Name] | ⏸ Not started | [estimate] | Phase 1 closed |
 
-**交付物**：
+---
+
+## Phase 0 · Documentation Foundation
+
+**Goal**: Build the AI collaboration document skeleton so any AI assistant can onboard quickly.
+
+**Deliverables**:
 - [x] AGENTS.md
 - [x] MEMORY.md
 - [x] ROADMAP.md
-- [x] docs/decisions/ 目录 + 初始 ADR
-- [x] docs/ARCHITECTURE.md 骨架
-- [x] .cursor/rules/ 规范文件
+- [x] docs/decisions/ directory + initial ADR
+- [x] docs/ARCHITECTURE.md skeleton
+- [x] .cursor/rules/ standards files
 
-**Definition of Done**：
-- [ ] AGENTS.md 有隔离区 + Critical Rules + DoD 清单
-- [ ] MEMORY.md 有当前状态 + 下一步
-- [ ] docs/decisions/ 有技术栈选型 ADR
-
----
-
-## Phase 1 · [下一阶段名称]
-
-**目标**：[填入这个阶段要完成什么]
-
-**交付物**：
-- [ ] [交付物 1]
-- [ ] [交付物 2]
-
-**Definition of Done**：
-- [ ] [验收标准 1]
-- [ ] [验收标准 2]
+**Definition of Done**:
+- [ ] AGENTS.md has protected zones + Critical Rules + DoD checklist
+- [ ] MEMORY.md has current status + next steps
+- [ ] docs/decisions/ has a tech stack ADR
 
 ---
 
-## 决策日志
+## Phase 1 · [Phase Name]
 
-| 日期 | 决策 | 详见 |
-|------|------|------|
-| [今天日期] | 初始化项目文档基建 | — |
+**Goal**: [What this phase needs to accomplish]
+
+**Deliverables**:
+- [ ] [Deliverable 1]
+- [ ] [Deliverable 2]
+
+**Definition of Done**:
+- [ ] [Acceptance criteria 1]
+- [ ] [Acceptance criteria 2]
+
+---
+
+## Decision Log
+
+| Date | Decision | See |
+|------|----------|-----|
+| [today's date] | Initialize project documentation foundation | — |
 ```
 
 ---
 
-## Step 2：生成 MEMORY.md
+## Step 2: Generate MEMORY.md
 
-在项目根目录生成 `MEMORY.md`：
+Generate `MEMORY.md` in the project root:
 
 ```markdown
-# 开发进度
+# Development Progress
 
-> 每次开发后必须更新本文件。**未更新 = 本次工作未关门。**
-> AI 助手开始新 session 时必须先读这个文件。
-
----
-
-## 当前状态
-
-**日期**：[今天日期]
-**阶段**：Phase 0 · 文档基建（已完成）
-
-**正在做**：等待用户启动 Phase 1
-
-**下一步**：
-- [ ] 在 ROADMAP.md 里补全 Phase 1 的交付物和 DoD
-- [ ] 开始 Phase 1 的第一个任务
+> Update this file after every development session. **Not updated = session not closed.**
+> AI assistants must read this file at the start of each new session.
 
 ---
 
-## 已完成
+## Current Status
 
-- [今天日期] 初始化 AI 文档基建（AGENTS.md、MEMORY.md、ROADMAP.md、ADR 目录、ARCHITECTURE 骨架）
+**Date**: [today's date]
+**Phase**: Phase 0 · Documentation Foundation (complete)
+
+**Working on**: Waiting for user to start Phase 1
+
+**Next steps**:
+- [ ] Fill in Phase 1 deliverables and DoD in ROADMAP.md
+- [ ] Start the first task of Phase 1
 
 ---
 
-## 注意事项 / 已知地雷
+## Completed
 
-> AI 助手开始新 session 时必读这部分
+- [today's date] Initialized AI documentation foundation (AGENTS.md, MEMORY.md, ROADMAP.md, ADR directory, ARCHITECTURE skeleton)
 
-[目前没有已知问题。踩到坑时在这里记录，格式：日期 + 问题描述 + 解决方案]
+---
+
+## Notes / Known Landmines
+
+> AI assistants: read this section at the start of every new session
+
+[No known issues yet. Record any problems encountered here: date + description + solution]
 ```
 
 ---
 
-## Step 3：生成 docs/decisions/ 目录
+## Step 3: Generate docs/decisions/ Directory
 
-创建 `docs/decisions/` 目录，并生成两个文件：
+Create the `docs/decisions/` directory with two files:
 
 ### docs/decisions/README.md
 
 ```markdown
-# 架构决策记录（ADR）
+# Architecture Decision Records (ADR)
 
-记录项目中每一个重要的技术 / 架构 / 产品决策。
+Records every important technical / architectural / product decision in this project.
 
-**AI 助手读这里时，从最新的文件开始读（文件名日期倒序）。**
+**AI assistants: read from the newest file first (files are sorted by date, descending).**
 
 ---
 
-## 文件命名格式
+## File Naming
 
 ```
-YYYY-MM-DD-决策主题.md
+YYYY-MM-DD-decision-topic.md
 ```
 
-## 每个 ADR 的结构
+## ADR Structure
 
 ```markdown
-# ADR YYYY-MM-DD — [决策标题]
+# ADR YYYY-MM-DD — [Decision Title]
 
-**Status**：Accepted | Superseded by [新 ADR]
+**Status**: Accepted | Superseded by [new ADR]
 
 ## Context
-为什么要做这个决策
+Why this decision needed to be made
 
 ## Decision
-决定做什么
+What was decided
 
 ## Alternatives
-- 方案 A：为什么没选
-- 方案 B：为什么没选
+- Option A: why it wasn't chosen
+- Option B: why it wasn't chosen
 
 ## Consequences
-- 好处
-- 代价 / 约束
+- Benefits
+- Costs / constraints
 ```
 
 ---
 
-## 决策索引
+## Decision Index
 
-| 日期 | 文件 | 简述 |
-|------|------|------|
-| [今天日期] | [今天日期]-tech-stack.md | 初始技术栈选型 |
-```
-
-### docs/decisions/[今天日期]-tech-stack.md
-
-```markdown
-# ADR [今天日期] — 技术栈选型
-
-**Status**：Accepted
-
-## Context
-
-项目初始化，需要确定主要技术栈。
-
-## Decision
-
-使用 [用户填写的技术栈]。
-
-## Alternatives
-
-[如果用户提到了备选方案，填入；否则写"初始化时未做详细对比，后续重大变更需补充 ADR"]
-
-## Consequences
-
-- 技术栈确定后，核心框架变更需要新的 ADR
-- [其他影响]
-```
-
----
-
-## Step 3.5：生成 docs/ARCHITECTURE.md 骨架
-
-生成 `docs/ARCHITECTURE.md`，章节标题根据项目类型调整：
-
-```markdown
-# 系统架构
-
-> 本文描述 [项目名] 的整体架构、模块划分、数据流和关键设计决策。
-> 详细的决策理由见 `docs/decisions/`。
-
----
-
-## 高层架构
-
-[用 ASCII 图或 Mermaid 描述系统整体结构]
-
-```
-[占位：在这里画架构图]
-例如：
-Client → API Layer → Service Layer → Database
-```
-
----
-
-## 模块说明
-
-| 模块 | 路径 | 职责 |
-|------|------|------|
-| [模块名] | `[路径]` | [一句话描述] |
-
----
-
-## 数据流
-
-[描述核心业务流程的数据流向]
-
-### [主要流程名称]
-
-```
-步骤 1 → 步骤 2 → 步骤 3
-```
-
----
-
-## 关键设计决策
-
-| 决策 | 选择 | 详见 |
-|------|------|------|
-| 技术栈 | [填入] | `docs/decisions/[日期]-tech-stack.md` |
-
----
-
-## 外部依赖
-
-| 依赖 | 用途 | 版本约束 |
+| Date | File | Summary |
 |------|------|---------|
-| [填入] | [填入] | [填入] |
+| [today's date] | [today's date]-tech-stack.md | Initial tech stack selection |
+```
 
----
+### docs/decisions/[today's date]-tech-stack.md
 
-## 性能 / 安全边界
+```markdown
+# ADR [today's date] — Tech Stack Selection
 
-[填入关键的性能约束和安全边界，例如：]
-- API 响应时间目标：< 200ms p95
-- 敏感数据不得写入日志
+**Status**: Accepted
+
+## Context
+
+Project initialization — need to decide on the primary tech stack.
+
+## Decision
+
+Using [user's tech stack].
+
+## Alternatives
+
+[If the user mentioned alternatives, fill in here; otherwise write "No detailed comparison at initialization — major changes in the future require a new ADR"]
+
+## Consequences
+
+- Once set, changing core frameworks requires a new ADR
+- [Other implications]
 ```
 
 ---
 
-## Step 4：生成 .cursor/rules/ 文件
+## Step 3.5: Generate docs/ARCHITECTURE.md Skeleton
 
-根据用户填写的技术栈，生成对应的 `.cursor/rules/` 规则文件。
+Generate `docs/ARCHITECTURE.md`:
 
-### 通用规则（所有项目都生成）
+```markdown
+# System Architecture
 
-**`.cursor/rules/general.mdc`**：
+> Describes [project name]'s overall architecture, module breakdown, data flow, and key design decisions.
+> For decision rationale, see `docs/decisions/`.
 
-```yaml
----
-description: 通用开发规范，适用所有文件
-alwaysApply: true
 ---
 
-# 通用规范
+## High-Level Architecture
 
-- 命名用自描述词，不用 tmp/data/obj/info 等无意义词
-- 不留死代码（注释掉的旧代码）
-- 不要 console.log 留在生产代码里
-- 错误处理不能是空 catch
-- 新功能必须有测试，不写测试的代码不算完成
+[Use ASCII art or Mermaid to describe the overall system structure]
 
-# 完工纪律
+```
+[Placeholder — draw your architecture diagram here]
 
-每次完成任何工作后，必须在同一轮里更新 MEMORY.md。
-涉及 Phase 进度时，同时更新 ROADMAP.md。
-未更新文档 = 本次工作未关门。
+Example (web app):
+Browser → Nginx → Next.js (App Router) → API Routes → Service Layer → PostgreSQL
+                                                     ↓
+                                                  Redis (Cache)
+
+Example (CLI tool):
+CLI Entry → Argument Parser → Commands → Core Logic → File System / API
 ```
 
-**`.cursor/rules/git-commits.mdc`**：
+---
+
+## Module Breakdown
+
+| Module | Path | Responsibility |
+|--------|------|----------------|
+| [Module name] | `[path]` | [One-line description] |
+
+---
+
+## Data Flow
+
+### [Main Business Flow Name]
+
+```
+Step 1: [description]
+  ↓
+Step 2: [description]
+  ↓
+Step 3: [description]
+```
+
+---
+
+## Key Design Decisions
+
+| Decision | Choice | See |
+|----------|--------|-----|
+| Tech stack | [fill in] | `docs/decisions/[date]-tech-stack.md` |
+
+---
+
+## External Dependencies
+
+| Dependency | Purpose | Notes |
+|------------|---------|-------|
+| [fill in] | [fill in] | [version constraints or notes] |
+
+---
+
+## Performance / Security Boundaries
+
+- [Performance target, e.g. API response time < 200ms p95]
+- [Security constraint, e.g. sensitive data must not appear in logs]
+- [Capacity constraint, e.g. single file upload max 10MB]
+```
+
+---
+
+## Step 4: Generate .cursor/rules/ Files
+
+Generate Cursor Rules based on the user's tech stack.
+
+### Always generate (all projects)
+
+**`.cursor/rules/general.mdc`**:
 
 ```yaml
 ---
-description: Git commit 规范
+description: General development standards, applies to all files
 alwaysApply: true
 ---
 
-# Commit Message 格式
+# General Standards
 
-使用 Conventional Commits 格式：
+- Use descriptive names — avoid tmp/data/obj/info and other meaningless words
+- No dead code (commented-out old code)
+- No console.log left in production code
+- Errors must be handled — no empty catch blocks
+- New features must have tests — code without tests is not done
+
+# Completion Discipline
+
+After finishing any work, update MEMORY.md in the same session.
+When Phase progress changes, update ROADMAP.md as well.
+Not updated = not done.
+```
+
+**`.cursor/rules/git-commits.mdc`**:
+
+```yaml
+---
+description: Git commit message standards
+alwaysApply: true
+---
+
+# Commit Message Format
+
+Use Conventional Commits format:
 
 type(scope): description
 
-type 可选值：
-- feat：新功能
-- fix：修复 bug
-- refactor：重构（不改行为）
-- test：测试相关
-- docs：文档
-- chore：工具、依赖、配置
+Allowed types:
+- feat: new feature
+- fix: bug fix
+- refactor: refactoring (no behavior change)
+- test: test-related
+- docs: documentation
+- chore: tooling, dependencies, configuration
 
-- description 不超过 72 字符
-- body 解释 why，不只是 what
+- description must be under 72 characters
+- body should explain why, not just what
 ```
 
-### TypeScript 项目（技术栈含 TypeScript 时额外生成）
+### TypeScript projects (when TypeScript is in the tech stack)
 
-**`.cursor/rules/typescript.mdc`**：
+**`.cursor/rules/typescript.mdc`**:
 
 ```yaml
 ---
-description: TypeScript 编码规范
+description: TypeScript coding standards
 globs: "**/*.ts,**/*.tsx"
 alwaysApply: false
 ---
 
-# TypeScript 规范
+# TypeScript Standards
 
-- 禁止 any，用 unknown + 类型守卫
-- async 函数必须有 try/catch
-- interface 优于 type（除 union 类型）
-- 导出的函数必须有 JSDoc
-- 枚举值用 const enum
+- No any — use unknown + type guards
+- async functions must have try/catch
+- interface over type (except for union types)
+- Exported functions must have JSDoc
+- Use const enum for enumerations
 ```
 
-### Python 项目（技术栈含 Python 时额外生成）
+### Python projects (when Python is in the tech stack)
 
-**`.cursor/rules/python.mdc`**：
+**`.cursor/rules/python.mdc`**:
 
 ```yaml
 ---
-description: Python 编码规范
+description: Python coding standards
 globs: "**/*.py"
 alwaysApply: false
 ---
 
-# Python 规范
+# Python Standards
 
-- 类型注解全覆盖（函数参数和返回值）
-- 用 dataclass 或 Pydantic 替代裸 dict
-- 异步函数用 async/await，不用 threading
-- 异常要具体，不用裸 Exception
-- 模块级变量避免可变默认值
+- Full type annotations (function parameters and return values)
+- Use dataclass or Pydantic instead of bare dicts
+- Use async/await for async functions — avoid threading
+- Be specific with exceptions — no bare Exception
+- Avoid mutable default values for module-level variables
 ```
 
-### 有隔离区时额外生成
+### When protected zones are declared
 
-**`.cursor/rules/protected-zones.mdc`**（仅在用户声明了隔离区时生成）：
+**`.cursor/rules/protected-zones.mdc`** (only when the user declared protected zones):
 
 ```yaml
 ---
-description: 受保护的代码区域，任何情况下不得修改
+description: Protected code zones — must not be modified under any circumstances
 alwaysApply: true
 ---
 
-# 受保护区域
+# Protected Zones
 
-以下路径 / 模块未经明确授权不得修改：
+The following paths / modules must NOT be modified without explicit authorization:
 
-[将用户声明的隔离区填入]
+[fill in user's declared protected zones]
 
-如需修改，必须先得到用户的明确确认。
+If modification is needed, get explicit confirmation from the user first.
 ```
 
 ---
 
-## Step 4.5：生成多编辑器配置文件
+## Step 4.5: Generate Multi-Editor Config Files
 
-### GitHub Copilot（用户选择了 Copilot 时生成）
+### GitHub Copilot (generate only if user selected Copilot)
 
-**`.github/copilot-instructions.md`**：
+**`.github/copilot-instructions.md`**:
 
 ```markdown
 # GitHub Copilot Instructions
 
-> This project has AI collaboration rules. Read before suggesting code.
+> This project has AI collaboration rules. Read before making suggestions.
+> Full rules: see `AGENTS.md` in the project root.
+
+---
 
 ## Project Context
 
-[复制 AGENTS.md §2 项目概述内容]
+[one-sentence description of the project]
+
+**Tech stack**: [fill in]
+
+---
 
 ## Do Not Touch
 
-[复制 AGENTS.md §3 隔离区内容]
+The following paths/modules must NOT be modified without explicit confirmation:
+
+- `[protected path]`: [reason]
+
+---
 
 ## Code Standards
 
-[复制 AGENTS.md §7 代码规范核心内容]
+- Use descriptive names — avoid tmp/data/obj/info
+- No dead code, no debug console.log in production
+- All async functions need try/catch
+- New features must have tests
+
+---
 
 ## After Every Task
 
-Always update MEMORY.md in the same session. Updated MEMORY = task is done.
+Always update `MEMORY.md` in the same session.
+**Updated MEMORY.md = task is done. Otherwise it is not done.**
 ```
 
-### Claude Code（用户选择了 Claude Code 时的说明）
+### Claude Code (when user selected Claude Code)
 
-Claude Code 会自动读根目录的 `AGENTS.md`，已覆盖。无需额外生成文件。
-可选：在 `.claude/settings.json` 里配置允许的工具和命令范围（高级场景）。
+Claude Code automatically reads `AGENTS.md` from the root — already covered.
+Optional: configure allowed tools and command scope in `.claude/settings.json` (advanced scenarios).
 
 ---
 
-## Step 5：生成 docs/anti-patterns.md
+## Step 5: Generate docs/anti-patterns.md
 
 ```markdown
-# 反模式记录
+# Anti-Pattern Records
 
-记录项目里踩过的坑、错误的做法、走过的弯路。
+Documents mistakes made in this project — wrong approaches and lessons learned.
 
-**每次踩坑后在这里补充，防止 AI 和团队重蹈覆辙。**
+**Add entries here whenever a mistake is made, to prevent repeating it.**
 
 ---
 
-## 格式
+## Format
 
 ```markdown
-### [日期] [简短标题]
+### [Date] [Short Title]
 
-**场景**：什么情况下遇到的
-**错误做法**：做了什么
-**后果**：导致什么问题
-**正确做法**：应该怎么做
+**Situation**: What was happening when this occurred
+**Wrong approach**: What was done
+**Consequence**: What went wrong
+**Correct approach**: What should be done instead
 ```
 
 ---
 
-## 记录
+## Records
 
-> 暂无记录。踩到坑时在这里补充。
+> No records yet. Add entries here when mistakes are made.
 ```
 
 ---
 
-## Step 6（可选）：生成 Prompt Eval 骨架
+## Step 6 (Optional): Generate Prompt Eval Scaffold
 
-**仅在用户回答"有 AI 驱动的核心功能"时执行此步骤。**
+**Only run this step if the user answered "yes" to AI-driven core features.**
 
-生成 `eval/eval.py`（Python 项目）或 `eval/eval.js`（JS/TS 项目）：
+Generate `eval/eval.py` (Python projects) or `eval/eval.js` (JS/TS projects):
 
-**Python 版本**：
+**Python version**:
 
 ```python
 """
-AI 输出质量评测脚本
+AI Output Quality Evaluation Script
 
-使用方法：
-1. 在 test_cases 里添加你的测试用例
-2. 运行 python eval/eval.py
-3. 看通过率 pass_rate
+Usage:
+1. Add your test cases to test_cases
+2. Run: python eval/eval.py
+3. Check pass_rate
 
-改 Prompt 之前先跑一遍，改完之后再跑一遍，对比通过率。
+Run before changing a Prompt, then run again after — compare pass rates.
 """
 
 test_cases = [
     {
-        "name": "示例用例",
-        "input": "用户输入示例",
-        "expected_traits": ["期望出现的关键词或特征"],
-        "forbidden_traits": ["不应该出现的内容"],
+        "name": "Example case",
+        "input": "Example user input",
+        "expected_traits": ["expected keyword or trait"],
+        "forbidden_traits": ["content that should not appear"],
     },
-    # 在这里添加更多测试用例
+    # Add more test cases here
 ]
 
 
@@ -737,7 +762,7 @@ def evaluate(ai_output: str, case: dict) -> dict:
 def run_eval(get_ai_output):
     """
     get_ai_output: callable(input: str) -> str
-    传入你的 AI 调用函数
+    Pass in your actual AI call function
     """
     results = []
     for case in test_cases:
@@ -753,29 +778,29 @@ def run_eval(get_ai_output):
 
 
 if __name__ == "__main__":
-    # 替换为你的实际 AI 调用
+    # Replace with your actual AI call
     def mock_ai(input_text: str) -> str:
-        return f"这是对'{input_text}'的模拟回复"
+        return f"Mock response to '{input_text}'"
 
     run_eval(mock_ai)
 ```
 
-**JS/TS 版本**（`eval/eval.js`）：
+**JS/TS version** (`eval/eval.js`):
 
 ```javascript
 /**
- * AI 输出质量评测脚本
- * 改 Prompt 之前先跑，改完之后再跑，对比通过率
+ * AI Output Quality Evaluation Script
+ * Run before changing a Prompt, then run again after — compare pass rates.
  */
 
 const testCases = [
   {
-    name: '示例用例',
-    input: '用户输入示例',
-    expectedTraits: ['期望出现的关键词'],
-    forbiddenTraits: ['不应该出现的内容'],
+    name: 'Example case',
+    input: 'Example user input',
+    expectedTraits: ['expected keyword'],
+    forbiddenTraits: ['content that should not appear'],
   },
-  // 在这里添加更多测试用例
+  // Add more test cases here
 ];
 
 function evaluate(aiOutput, testCase) {
@@ -799,55 +824,55 @@ async function runEval(getAiOutput) {
   return results;
 }
 
-// 替换为你的实际 AI 调用
-const mockAi = async (input) => `这是对"${input}"的模拟回复`;
+// Replace with your actual AI call
+const mockAi = async (input) => `Mock response to "${input}"`;
 runEval(mockAi);
 ```
 
 ---
 
-## Step 7：收尾汇报
+## Step 7: Summary Report
 
-生成完成后，向用户输出以下汇报（根据实际生成的文件调整）：
+After generation, output the following to the user (adjust based on what was actually generated):
 
 ```
-✅ AI 文档基建初始化完成
+✅ AI documentation foundation initialized
 
-生成了以下文件：
+Generated files:
 
-📄 AGENTS.md                   ← AI 入职文件（隔离区 + DoD + Agentic 护栏）
-📄 MEMORY.md                   ← 进度文件，每次开发后更新
-📄 ROADMAP.md                  ← Phase 规划 + 完工纪律
+📄 AGENTS.md                   ← AI onboarding file (protected zones + DoD + agentic guardrails)
+📄 MEMORY.md                   ← Progress file — update after every session
+📄 ROADMAP.md                  ← Phase plan + completion discipline
 📁 docs/
-   ├── ARCHITECTURE.md          ← 架构骨架（待填充）
-   ├── anti-patterns.md         ← 踩坑记录
+   ├── ARCHITECTURE.md          ← Architecture skeleton (fill in as you build)
+   ├── anti-patterns.md         ← Mistake log
    └── decisions/
-       ├── README.md            ← ADR 索引
-       └── [日期]-tech-stack.md ← 初始技术栈决策
+       ├── README.md            ← ADR index
+       └── [date]-tech-stack.md ← Initial tech stack decision
 📁 .cursor/rules/
-   ├── general.mdc              ← 通用规范（含完工纪律，自动注入）
-   ├── git-commits.mdc          ← Commit 规范（自动注入）
-   └── [技术栈].mdc             ← 技术栈专项规范
-[📄 .github/copilot-instructions.md ← Copilot 配置（仅 Copilot 用户）]
-[📁 eval/eval.py|js              ← AI 输出评测（仅有 AI 功能时）]
+   ├── general.mdc              ← General standards (includes DoD discipline, always injected)
+   ├── git-commits.mdc          ← Commit standards (always injected)
+   └── [tech-stack].mdc         ← Tech stack specific standards
+[📄 .github/copilot-instructions.md ← Copilot config (Copilot users only)]
+[📁 eval/eval.py|js              ← AI output evaluation (AI features only)]
 
 ---
 
-下一步建议：
-1. 打开 ROADMAP.md，补全 Phase 1 的目标、交付物和 DoD
-2. 打开 AGENTS.md，确认隔离区 / MCP 配置 / Agentic 护栏是否完整
-3. 打开 docs/ARCHITECTURE.md，画出系统架构图
-4. 开始开发——AI 每次开新 session 会自动读这些文件
+Next steps:
+1. Open ROADMAP.md — fill in Phase 1 goals, deliverables, and DoD
+2. Open AGENTS.md — confirm protected zones / MCP config / agentic guardrails are complete
+3. Open docs/ARCHITECTURE.md — draw your system architecture diagram
+4. Start building — AI will automatically read these files at the start of each new session
 ```
 
 ---
 
-## 注意事项
+## Notes
 
-- **不要跳过 Step 0**：没有用户信息就生成的模板毫无针对性
-- **隔离区必须明确**：宁可问清楚，不要猜测哪些代码不能动
-- **技术栈规则按需生成**：用户没提到 TypeScript 就不生成 TypeScript rules
-- **Copilot 配置按需生成**：用户没选 Copilot 就不生成 `.github/copilot-instructions.md`
-- **MCP 节按需填入**：用户说"没有"就删掉 AGENTS.md 的 MCP 配置节
-- **Eval 是可选的**：没有 AI 功能的项目不要强加 eval 骨架
-- **ROADMAP Phase 结构**：模板里只给 Phase 0 和 Phase 1 骨架，其余 Phase 让用户自己填
+- **Do not skip Step 0**: templates generated without user context have no real value
+- **Protected zones must be explicit**: ask rather than guess what code shouldn't be touched
+- **Generate tech stack rules on demand**: if the user didn't mention TypeScript, don't generate TypeScript rules
+- **Copilot config on demand**: only generate `.github/copilot-instructions.md` if user selected Copilot
+- **MCP section on demand**: if user said "none", delete the MCP section from AGENTS.md
+- **Eval is optional**: don't force eval scaffolding onto projects with no AI features
+- **ROADMAP Phase structure**: the template only has Phase 0 and Phase 1 — let the user define the rest

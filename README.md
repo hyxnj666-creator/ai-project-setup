@@ -2,133 +2,158 @@
 
 > A Cursor Skill that initializes AI collaboration documentation infrastructure for any project.
 
-一句话，为任意项目生成完整的 AI 协作文档基建——AGENTS.md、MEMORY.md、ADR 目录、Cursor Rules、踩坑记录。
+[中文版](./README.zh-CN.md) | English
 
 ---
 
-## 解决什么问题
+## What Problem Does It Solve?
 
-把 AI 引入真实项目时，最常见的失控场景：
+When you bring AI into a real project, these failures happen constantly:
 
-- **AI 改了不该改的代码**——没有隔离区，AI 随手"优化"了稳定模块
-- **AI 遗忘了上一个 session 的决策**——没有 MEMORY.md，每次新对话都是白板
-- **AI 生成的代码不符合团队规范**——没有 Cursor Rules，靠口头提醒
-- **架构决策没有记录**——没有 ADR，三个月后改方向时发现已深度耦合
+- **AI modifies code it shouldn't** — no protected zones defined, AI casually "improves" stable modules
+- **AI forgets decisions from the last session** — no MEMORY.md, every new conversation starts from scratch
+- **AI-generated code doesn't follow team standards** — no Cursor Rules, only verbal reminders
+- **Architecture decisions aren't recorded** — no ADR, three months later you discover deep coupling
 
-这个 Skill 帮你在 5 分钟内把这些问题都解决掉。
+This Skill solves all of the above in under 5 minutes.
 
 ---
 
-## 安装
+## Install
 
-将 `SKILL.md` 放入你的 Cursor Skills 目录：
+Copy `SKILL.md` into your Cursor Skills directory:
 
 ```bash
-# 个人全局使用（推荐）
+# Personal global use (recommended)
 ~/.cursor/skills/ai-project-setup/SKILL.md
 
-# 项目内使用（团队共享）
+# Project-level use (shared with team)
 .cursor/skills/ai-project-setup/SKILL.md
 ```
 
 ---
 
-## 使用方法
+## Usage
 
-在 Cursor 里直接说：
-
-```
-帮我初始化 AI 开发规范
-```
-
-或者：
+Just tell Cursor:
 
 ```
 setup AI project documentation
 ```
 
-Skill 会先问你 4 个问题，再根据你的回答生成完整的文档骨架。
+or:
+
+```
+initialize AI collaboration docs for this project
+```
+
+The Skill will ask you 6 questions, then generate a complete documentation skeleton tailored to your project.
 
 ---
 
-## 生成的文件结构
+## Generated File Structure
 
 ```
 your-project/
-├── AGENTS.md                    ← AI 入职文件（核心）
-├── MEMORY.md                    ← 跨 session 进度记录
+├── AGENTS.md                         ← AI onboarding file (core)
+├── MEMORY.md                         ← Cross-session progress tracking
+├── ROADMAP.md                        ← Phase plan + Definition of Done
 ├── docs/
+│   ├── ARCHITECTURE.md               ← System architecture skeleton
 │   ├── decisions/
-│   │   ├── README.md            ← ADR 索引
-│   │   └── YYYY-MM-DD-tech-stack.md  ← 初始技术栈决策
-│   └── anti-patterns.md         ← 踩坑记录
+│   │   ├── README.md                 ← ADR index
+│   │   └── YYYY-MM-DD-tech-stack.md  ← Initial tech stack decision
+│   └── anti-patterns.md              ← Mistake log
 ├── .cursor/
 │   └── rules/
-│       ├── general.mdc          ← 通用规范（自动注入）
-│       ├── git-commits.mdc      ← Commit 规范（自动注入）
-│       └── [typescript|python].mdc   ← 技术栈规范（按需生成）
+│       ├── general.mdc               ← General standards (auto-injected)
+│       ├── git-commits.mdc           ← Commit standards (auto-injected)
+│       └── [typescript|python].mdc   ← Tech stack rules (generated on demand)
+├── .github/
+│   └── copilot-instructions.md       ← Copilot config (Copilot users only)
 └── eval/
-    └── eval.py | eval.js        ← AI 输出评测（仅有 AI 功能时生成）
+    └── eval.py | eval.js             ← AI output eval (AI features only)
 ```
 
 ---
 
-## 核心概念
+## Core Concepts
 
-### AGENTS.md — AI 入职文件
+### AGENTS.md — AI Onboarding File
 
-每次开新对话，AI 读这个文件对齐上下文。包含：
-- 项目概述和技术栈
-- 隔离区（哪些代码不能动）
-- Critical Rules（不可违反的红线）
-- 代码规范
-- "Where to Look" 索引表
+Every time a new conversation starts, the AI reads this to align on context. Contains:
+- Project overview and tech stack
+- **Protected zones** — which code must not be touched
+- **Critical Rules** — non-negotiable red lines
+- **Agentic Guardrails** — shell command allow/deny lists for autonomous tasks
+- **Definition of Done** — doc sync discipline (MEMORY + ROADMAP + ADR + anti-patterns)
+- Code standards
+- "Where to Look" index
 
-### MEMORY.md — 跨 Session 记忆
+### MEMORY.md — Cross-Session Memory
 
-AI 最大的工程问题是没有持久记忆。MEMORY.md 是人工维护的"进度条"——每次开发后更新，下次开新对话时 AI 读一遍就能恢复上下文。
+AI's biggest engineering problem is no persistent memory. MEMORY.md is a manually maintained "progress tracker" — updated after every session, read at the start of the next one so the AI can resume exactly where it left off.
 
-**铁律：未更新 MEMORY.md = 本次开发未关门。**
+**Iron rule: MEMORY.md not updated = session not closed.**
 
-### docs/decisions/ — 架构决策记录（ADR）
+### ROADMAP.md — Phase Planning
 
-每个重要决策写一个日期命名的 Markdown 文件，记录 Context → Decision → Alternatives → Consequences。AI 读 `docs/decisions/` newest-first，不会在同样问题上绕第二遍。
+Phase-based roadmap with explicit Definitions of Done. Each Phase has hard exit criteria — the next Phase cannot start until all DoD items are checked off. Includes a **completion discipline table** that runs after every task.
 
-### .cursor/rules/ — 自动注入的代码规范
+### docs/decisions/ — Architecture Decision Records (ADR)
 
-Rules 文件在每次对话时自动注入，不需要 AI 主动读。根据技术栈生成对应规范（TypeScript strict、Python 类型注解、Git commit 格式等）。
+Every important decision gets a date-named Markdown file recording Context → Decision → Alternatives → Consequences. AI reads `docs/decisions/` newest-first, so it won't circle back to the same questions.
 
----
+### docs/ARCHITECTURE.md — Architecture Skeleton
 
-## 适用场景
+A structured template for documenting the system's high-level architecture, module breakdown, data flow, and key design decisions. Starts as a skeleton — fill it in as the project grows.
 
-| 场景 | 效果 |
-|------|------|
-| 新项目启动 | 5 分钟内建好 AI 协作基建，开箱即用 |
-| 老项目补规范 | 补全缺失的 AGENTS.md 和 MEMORY.md |
-| 团队共享 | 规范放进 .cursor/skills/，所有人统一初始化流程 |
-| 个人开源项目 | 让贡献者（人或 AI）快速上手项目 |
+### .cursor/rules/ — Auto-Injected Code Standards
 
----
-
-## 和 ai-memory 的关系
-
-[ai-memory](https://github.com/hyxnj666-creator/ai-memory) 是**提取**——从 AI 对话历史里自动提取知识，写入 AGENTS.md。
-
-这个 Skill 是**主动建设**——在项目初始化时手动搭建文档骨架，告诉 AI 这个项目的规则是什么。
-
-两者互补：用这个 Skill 建好骨架，再用 ai-memory 持续从对话中提取新知识填充进去。
+Rules files are injected automatically into every conversation — no need for the AI to actively read them. Generated per tech stack (TypeScript strict mode, Python type annotations, Git commit format, etc.).
 
 ---
 
-## 背景
+## Use Cases
 
-这个 Skill 提炼自两个真实项目的实战经验：
+| Scenario | Benefit |
+|----------|---------|
+| Starting a new project | AI collaboration foundation ready in 5 minutes |
+| Retrofitting an existing project | Add missing AGENTS.md and MEMORY.md |
+| Team sharing | Put Skill in `.cursor/skills/` for a consistent onboarding flow |
+| Personal open-source projects | Lets contributors (human or AI) ramp up quickly |
 
-- **conor-site**：Next.js + AI Persona 引擎，用 MEMORY.md + Feature Gate 管理迭代
-- **ai-memory**：开源 CLI 工具，用 ADR + Spike-First 纪律管理架构决策
+---
 
-详细说明见文章：[AI 开发规范：让 AI 在真实项目里稳定工作的工程体系](https://blog.conorliu.com/series/topics/14-ai-dev-standards/)
+## Relationship to ai-memory
+
+[ai-memory](https://github.com/hyxnj666-creator/ai-memory) is **extraction** — automatically extracts knowledge from AI conversation history and writes it into AGENTS.md.
+
+This Skill is **active setup** — manually builds the documentation skeleton at project initialization, telling AI what the rules are from the start.
+
+They complement each other: use this Skill to build the skeleton, then use ai-memory to continuously extract new knowledge from conversations and fill it in.
+
+---
+
+## Background
+
+This Skill is distilled from real-world experience on two projects:
+
+- **conor-site**: Next.js + AI Persona engine, managed with MEMORY.md + Feature Gates
+- **ai-memory**: Open-source CLI tool, managed with ADR + Spike-First discipline
+
+Full write-up: [AI Dev Standards: An Engineering System for Stable AI Collaboration](https://blog.conorliu.com/series/topics/14-ai-dev-standards/)
+
+---
+
+## Language Support
+
+| File | Language |
+|------|----------|
+| `SKILL.md` | English (primary) |
+| `SKILL.zh.md` | 中文 |
+| `README.md` | English |
+| `README.zh-CN.md` | 中文 |
 
 ---
 
