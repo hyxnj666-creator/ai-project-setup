@@ -1,25 +1,25 @@
 # [项目名] — AI 开发规则
 
-> 本文件适用于所有 AI 编码助手（Cursor、Claude Code、GitHub Copilot、其他 Agent）。
+> 本文件适用于所有 AI 编码助手（Cursor、Claude Code、GitHub Copilot、Codex CLI、其他 Agent）。
 > 开始任何开发工作前，请按顺序阅读本文件。
 
 ---
 
-## 强制阅读顺序
+## 1. 强制阅读顺序
 
 开始写代码前，按顺序读完以下文件：
 
 ```
-1. ROADMAP.md        ← 当前在哪个阶段（WHAT）
-2. MEMORY.md         ← 上次做到哪（WHERE WE LEFT OFF）
-3. docs/decisions/   ← 关键决策记录（WHY）
+1. ROADMAP.md        ← 当前在哪个阶段，Phase 目标（WHAT）
+2. MEMORY.md         ← 上次做到哪，已知地雷（WHERE WE LEFT OFF）
+3. docs/decisions/   ← 关键决策记录，newest-first（WHY）
 ```
 
 **读不懂就停下来问，不要边读边改代码。**
 
 ---
 
-## 项目概述
+## 2. 项目概述
 
 [一句话描述项目做什么]
 
@@ -29,32 +29,64 @@
 
 ---
 
-## 🔒 隔离区（不可触碰）
+## 3. 🔒 隔离区（不可触碰）
 
 以下代码 / 路径 / 资源，**未经明确授权不得修改**：
 
-- `[受保护的路径]`：[原因，例如：v1 已上线，不稳定改动会影响生产]
+- `[受保护的路径或模块]`：[原因，例如 v1 已上线，改动影响生产]
 
 如需修改以上内容，必须先得到明确确认再动手。
 
 ---
 
-## Critical Rules（不可违反）
+## 4. Critical Rules（不可违反）
 
 1. **所有新功能必须有对应测试**——不写测试的代码不算完成
 2. **破坏性变更需要明确授权**——不要"顺便"重构稳定模块
 3. **依赖要最小化**——新增依赖前确认是否有内置替代方案
-4. **文档要同步**——代码改了，MEMORY.md 必须同步更新
+4. **文档要同步**——代码改了，MEMORY.md 必须在同一轮里更新
+5. **禁止在生产路径执行写操作**——未经确认不得修改生产数据库 / 生产 API
 
 ---
 
-## 代码规范
+## 5. Agentic 执行护栏
+
+> 本节针对自主 agentic 任务（AI 独立读写文件、执行命令、调用 API）的额外约束。
+
+**Shell 命令**：
+- ✅ 可自主执行：`git status / diff / log`、`npm run test / build / lint`、只读查询
+- ⚠️ 执行前须告知：`git commit / push`、`npm publish`、`docker`
+- 🚫 绝对禁止：`rm -rf`、`DROP TABLE`、向生产 API 发写操作、修改 `.env` / 密钥文件
+
+**文件系统**：
+- 不得读写 `.env`、`*.secret`、`*.key`、`credentials.*`
+- 不得修改隔离区（见第 3 节）内的任何文件
+- 生成新文件时，已存在的文件覆盖前必须先确认
+
+---
+
+## 6. 完工的 Definition of Done（文档同步纪律）
+
+**每完成一项工作，同一轮里必须对照以下清单：**
+
+| # | 文档 | 何时必更 |
+|---|------|---------|
+| 1 | `MEMORY.md` | **永远**——更新当前状态 + 下一步 + 已完成 |
+| 2 | `ROADMAP.md` | 涉及 Phase 进度时——打勾对应子项 |
+| 3 | 相关 ADR | 决策有调整时——追加修订历史（不改原文） |
+| 4 | `docs/anti-patterns.md` | 踩到坑时——记录反模式 + 正确做法 |
+
+**未跑清单 = 本次工作未关门。不允许进入下一项 / commit / 告诉用户"做完了"。**
+
+---
+
+## 7. 代码规范
 
 ### 通用
 - 变量和函数用自描述命名，不用 tmp/data/obj 等无意义词
 - 每个函数做一件事，超过 50 行考虑拆分
 - 错误必须处理，不允许空 catch
-- 不留死代码（注释掉的旧代码）
+- 不留死代码（注释掉的旧代码直接删）
 
 ### [技术栈专项规范]
 
@@ -72,7 +104,7 @@
 
 ---
 
-## 架构模式
+## 8. 架构模式
 
 **业务逻辑 / IO 分离**：
 - 业务逻辑写成纯函数（无副作用，易测试）
@@ -84,32 +116,45 @@
 
 ---
 
-## 常见任务清单
+## 9. MCP 配置
+
+[仅在项目使用 MCP 时填入；否则删除此节]
+
+**允许使用的 MCP**：
+- `[mcp-name]`：[用途，例如 filesystem - 读写本地文件]
+
+**禁止在生产环境使用的 MCP**：
+- `[mcp-name]`：[原因]
+
+---
+
+## 10. 常见任务清单
 
 ### 添加新功能
 1. 确认需求，在 MEMORY.md 里记录计划
 2. （复杂功能）先写 spike doc 再写代码
-3. 实现功能，遵守 Critical Rules
+3. 实现功能，遵守 Critical Rules 和 Agentic 护栏
 4. 写测试
-5. 更新 MEMORY.md
+5. 跑 DoD 清单（§6）
 
 ### 修复 Bug
 1. 复现问题，确认根因
 2. 修复 + 加回归测试
-3. 更新 MEMORY.md（新踩坑点同步到 docs/anti-patterns.md）
+3. 跑 DoD 清单（§6）
 
 ### 关键决策
-1. 写 ADR 到 docs/decisions/YYYY-MM-DD-主题.md
-2. 在 docs/decisions/README.md 的索引表里登记
+1. 写 ADR 到 `docs/decisions/YYYY-MM-DD-主题.md`
+2. 在 `docs/decisions/README.md` 的索引表里登记
 
 ---
 
-## Where to Look（按问题找文档）
+## 11. Where to Look（按问题找文档）
 
 | 问题 | 去哪里看 |
 |------|---------|
 | 现在在做什么 / 进度 | `MEMORY.md` |
-| 为什么做这个决策 | `docs/decisions/` |
+| 这个 Phase 的目标 / DoD | `ROADMAP.md` |
+| 为什么做这个决策 | `docs/decisions/` newest-first |
 | 踩过什么坑 | `docs/anti-patterns.md` |
-| 架构是什么 | `docs/ARCHITECTURE.md`（如有） |
+| 系统架构是什么 | `docs/ARCHITECTURE.md` |
 | 怎么发版 / 部署 | `docs/DEPLOY.md`（如有） |
